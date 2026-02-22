@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<title>Dorothy's Training Tracker</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f0f4f8; min-height: 100vh; padding-bottom: 60px; }
+
+/* HEADER */
+#header { padding: 20px 16px 14px; color: white; transition: background 0.3s; }
+.phase-label { font-size: 11px; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.week-title { font-size: 28px; font-weight: 700; margin-bottom: 2px; }
+.session-count { font-size: 13px; opacity: 0.85; margin-bottom: 10px; }
+.prog-bg { background: rgba(255,255,255,0.25); border-radius: 8px; height: 8px; margin-bottom: 14px; }
+.prog-fill { height: 8px; border-radius: 8px; background: white; transition: width 0.3s; }
+.week-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+.wpill { width: 28px; height: 28px; border-radius: 50%; border: none; font-size: 11px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+
+/* TABS */
+#tabs { background: white; border-bottom: 1px solid #e0e0e0; display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 10; }
+.tab-btn { padding: 12px 18px; border: none; background: none; font-size: 13px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; color: #777; font-family: inherit; transition: all 0.15s; }
+.tab-btn.on { font-weight: 700; }
+
+/* CONTENT */
+#content { max-width: 680px; margin: 0 auto; padding: 16px; }
+.hint { font-size: 13px; color: #666; margin-bottom: 14px; line-height: 1.5; }
+
+/* SESSION CARDS */
+.scard { display: flex; align-items: center; gap: 12px; background: white; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; user-select: none; -webkit-user-select: none; }
+.scard.done { border-color: var(--pc); background: var(--pl); }
+.scard.flex { opacity: 0.8; }
+.scheck { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; font-size: 13px; color: transparent; }
+.scard.done .scheck { background: var(--pc); border-color: var(--pc); color: white; }
+.semoji { font-size: 20px; }
+.sname { font-weight: 700; font-size: 14px; color: #222; }
+.badge { display: inline-block; margin-left: 6px; font-size: 10px; padding: 1px 7px; border-radius: 10px; }
+.bp { background: #FFD700; color: #333; }
+.bf { background: #e0e0e0; color: #555; }
+
+/* NOTES */
+.notes-box { margin-top: 14px; background: white; border-radius: 12px; padding: 14px; border: 1px solid #e0e0e0; }
+.notes-lbl { font-weight: 700; font-size: 14px; color: #333; margin-bottom: 8px; }
+textarea { width: 100%; min-height: 75px; padding: 9px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; resize: vertical; font-family: inherit; }
+textarea:focus { outline: none; border-color: var(--pc); }
+
+/* TARGET CARDS */
+.phase-banner { border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+.phase-bname { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.phase-bdesc { font-size: 13px; color: #444; line-height: 1.5; }
+.tcard { background: white; border-radius: 12px; padding: 13px 16px; margin-bottom: 9px; border: 1px solid #e0e0e0; }
+.tlabel { font-size: 11px; color: #999; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tval { font-weight: 700; color: #222; font-size: 15px; }
+.race-card { background: #1F4E79; border-radius: 12px; padding: 22px; text-align: center; color: white; }
+.race-emoji { font-size: 40px; margin-bottom: 8px; }
+.race-title { font-size: 22px; font-weight: 700; }
+.race-tip { font-size: 13px; opacity: 0.9; margin-top: 8px; line-height: 1.6; }
+.race-target { font-size: 18px; font-weight: 700; margin-top: 12px; }
+
+/* METRIC CARDS */
+.sdiv { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; font-weight: 600; }
+.mcard { background: white; border-radius: 12px; padding: 11px 14px; margin-bottom: 9px; border: 1px solid #e0e0e0; }
+.mlabel { font-size: 12px; color: #888; margin-bottom: 5px; }
+input[type=text] { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
+input[type=text]:focus { outline: none; border-color: var(--pc); }
+
+/* PROGRESS */
+.pweek { background: white; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 12px 14px; margin-bottom: 9px; }
+.pweek.cur { border-color: var(--pc); background: var(--pl); }
+.pw-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.pw-title { font-weight: 700; font-size: 14px; }
+.pw-sess { font-size: 12px; color: #888; }
+.pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill { font-size: 11px; padding: 3px 8px; border-radius: 8px; background: #f0f4f8; color: #444; }
+.pill.erg { background: #e8f4fd; }
+.pill.hr { background: #fce4d6; }
+.pill.warn { background: #fce4d6; color: #c0392b; }
+.pill.ok { background: #e2efda; }
+.pill.fat { background: #fff2cc; }
+.nodata { font-size: 12px; color: #bbb; font-style: italic; }
+.wnote { font-size: 12px; color: #555; margin-top: 6px; padding-top: 6px; border-top: 1px solid #eee; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="phase-label" id="h-phase"></div>
+  <div class="week-title" id="h-week"></div>
+  <div class="session-count" id="h-count"></div>
+  <div class="prog-bg"><div class="prog-fill" id="h-prog"></div></div>
+  <div class="week-pills" id="h-pills"></div>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn on" data-tab="tracker" onclick="switchTab('tracker')">✅ Sessions</button>
+  <button class="tab-btn" data-tab="targets" onclick="switchTab('targets')">🎯 Targets</button>
+  <button class="tab-btn" data-tab="metrics" onclick="switchTab('metrics')">📊 Log</button>
+  <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">📈 Progress</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const START = new Date("2026-02-23");
+
+const PHASES = [
+  { name:"Phase 1 — Reestablish", weeks:[1,2,3,4], color:"#2E75B6", light:"#D6E4F0",
+    desc:"Reestablish movement patterns, reintroduce erg, build run base. Don't chase weight. Learn what your shoulder tolerates." },
+  { name:"Phase 2 — Build", weeks:[5,6,7,8,9,10], color:"#1F4E79", light:"#BDD7EE",
+    desc:"Introduce conventional deadlift, increase loads, extend run duration. Erg splits will naturally drop without chasing them." },
+  { name:"Phase 3 — Develop", weeks:[11,12,13,14,15,16], color:"#375623", light:"#E2EFDA",
+    desc:"Half marathon specific run programming begins. Strength maintenance. This is where sub-2:00 becomes real." },
+  { name:"Phase 4 — Peak & Race", weeks:[17,18,19,20], color:"#7B2C2C", light:"#FCE4D6",
+    desc:"Taper. Reduce volume, maintain sharpness. Trust the fitness you've built. Race smart." },
+];
+
+const SESSIONS = [
+  { day:"Mon", label:"Lower Body Lift", icon:"🏋️", priority:false, flex:false },
+  { day:"Tue", label:"Treadmill Run", icon:"🏃", priority:false, flex:false },
+  { day:"Wed", label:"Upper Body Lift", icon:"💪", priority:false, flex:false },
+  { day:"Thu", label:"Erg Steady State", icon:"🚣", priority:false, flex:true },
+  { day:"Fri", label:"Posterior Chain + Erg", icon:"⚡", priority:false, flex:false },
+  { day:"Sat", label:"Long Run", icon:"🌟", priority:true, flex:false },
+  { day:"Sun", label:"Makeup / Rest", icon:"😴", priority:false, flex:true },
+];
+
+const TARGETS = {
+  1: { squat:"155–165 lbs", rdl:"135–145 lbs", hip:"Assess first session — start 95–115 lbs", ergThu:"4000–5000m @ 2:16–2:18 /500m", ergFri:"4×1000m @ 2:14–2:16 /500m", run:"40 min easy • 5.2–5.6 mph • HR <145", long:"4–5 miles • 5.2–5.6 mph • HR <145 • 1% incline" },
+  2: { squat:"155–165 lbs", rdl:"137–147 lbs", hip:"105–125 lbs", ergThu:"4000–5000m @ 2:16–2:18", ergFri:"4×1000m @ 2:14–2:16", run:"40 min easy • HR <145", long:"4–5 miles • genuinely conversational" },
+  3: { squat:"160–168 lbs", rdl:"140–150 lbs", hip:"110–130 lbs", ergThu:"4500–5000m @ 2:15–2:17", ergFri:"4×1000m @ 2:13–2:15", run:"42 min easy • HR <147", long:"5 miles • HR <145" },
+  4: { squat:"162–170 lbs", rdl:"142–152 lbs", hip:"115–135 lbs", ergThu:"5000–6000m @ 2:14–2:16", ergFri:"4×1000m @ 2:13–2:15", run:"45 min steady • HR 145–155", long:"5 miles • last mile at race pace 9:05/mi" },
+  5: { squat:"165–175 lbs", rdl:"150–160 lbs", hip:"125–145 lbs", ergThu:"5000–6000m @ 2:14–2:16", ergFri:"2×3000m @ 2:12–2:14", run:"Steady 20 min + tempo 10 min @ 6.8–7.0 mph", long:"5–6 miles + strides + last mile race pace" },
+  6: { squat:"168–178 lbs", rdl:"153–163 lbs", hip:"128–148 lbs", ergThu:"5500–6000m @ 2:13–2:15", ergFri:"2×3000m @ 2:12–2:14", run:"Steady + tempo block", long:"6 miles + 4–6 strides" },
+  7: { squat:"170–180 lbs", rdl:"157–167 lbs", hip:"132–152 lbs", ergThu:"6000–7000m @ 2:12–2:14", ergFri:"2×3000m @ 2:11–2:13", run:"4×6 min tempo @ 7.0 mph / 2 min off", long:"6–7 miles + strides" },
+  8: { squat:"173–183 lbs", rdl:"160–170 lbs", hip:"137–157 lbs", ergThu:"6000–7000m @ 2:12–2:14", ergFri:"6000m straight @ 2:10–2:12", run:"4×6 min tempo intervals", long:"7 miles + tempo miles 4–6" },
+  9: { squat:"175–185 lbs", rdl:"163–173 lbs", hip:"140–160 lbs", ergThu:"6500–7000m @ 2:11–2:13", ergFri:"6000m @ 2:10–2:12", run:"4×6 min tempo", long:"7–8 miles + race pace work" },
+  10: { squat:"178–185 lbs", rdl:"167–177 lbs", hip:"143–163 lbs", ergThu:"6000–7000m @ 2:11–2:13", ergFri:"6000m @ 2:10–2:12", run:"3–4 mile tempo @ 7.0–7.2 mph", long:"8 miles • miles 4–6 tempo effort" },
+  11: { squat:"180–190 lbs", rdl:"170–180 lbs", hip:"147–167 lbs", ergThu:"7000–8000m @ 2:10–2:12", ergFri:"3×2000m @ 2:08–2:10", run:"3–4 mile tempo", long:"8–9 miles + 2 mi race pace in middle" },
+  12: { squat:"182–192 lbs", rdl:"172–182 lbs", hip:"150–170 lbs", ergThu:"7000–8000m @ 2:10–2:12", ergFri:"3×2000m @ 2:08–2:10", run:"3–4 mile tempo", long:"9 miles + race pace segment" },
+  13: { squat:"183–193 lbs", rdl:"174–184 lbs", hip:"152–172 lbs", ergThu:"7500–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:08–2:10", run:"Race pace comfort work", long:"9–10 miles + 2 mi race pace" },
+  14: { squat:"185–195 lbs", rdl:"176–186 lbs", hip:"155–175 lbs", ergThu:"7500–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:08–2:10", run:"Race pace sharpening", long:"10 miles • miles 6–9 at race pace" },
+  15: { squat:"187–197 lbs", rdl:"178–188 lbs", hip:"157–177 lbs", ergThu:"7000–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:07–2:09", run:"Race pace work", long:"10–11 miles — peak long run" },
+  16: { squat:"188–198 lbs", rdl:"180–190 lbs", hip:"159–179 lbs", ergThu:"7000–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:07–2:09", run:"Race pace sharpening + strides", long:"11 miles — race simulation" },
+  17: { squat:"183–193 lbs", rdl:"174–184 lbs", hip:"152–170 lbs", ergThu:"5000m easy", ergFri:"2×1500m easy", run:"Easy + 4 strides", long:"8 miles — taper begins. Easy only." },
+  18: { squat:"178–188 lbs", rdl:"170–180 lbs", hip:"148–165 lbs", ergThu:"4000m easy", ergFri:"2×1000m easy", run:"Easy + 4 strides", long:"7 miles easy + strides" },
+  19: { squat:"170–180 lbs", rdl:"165–172 lbs", hip:"143–158 lbs", ergThu:"Rest", ergFri:"20 min easy", run:"20 min easy + 4 strides", long:"5 miles shake-out. Nothing hard." },
+  20: { squat:"—", rdl:"—", hip:"—", ergThu:"—", ergFri:"—", run:"Race week — easy only", long:"🏁 RACE DAY" },
+};
+
+const METRIC_GROUPS = [
+  { title:"💪 Strength", fields:[
+    { key:"squat", label:"Back Squat Working Set (lbs)", ph:"e.g. 165" },
+    { key:"deadlift", label:"Deadlift / RDL Working Set (lbs)", ph:"e.g. 145" },
+    { key:"hipThrust", label:"Hip Thrust Working Set (lbs)", ph:"e.g. 115" },
+  ]},
+  { title:"🚣 Erg", fields:[
+    { key:"ergSplit", label:"Best Erg Split (/500m)", ph:"e.g. 2:14.5" },
+    { key:"ergDist", label:"Total Erg Distance (m)", ph:"e.g. 9000" },
+  ]},
+  { title:"🏃 Running", fields:[
+    { key:"runPace", label:"Easy Run Pace (mph)", ph:"e.g. 5.7" },
+    { key:"runHR", label:"Long Run Avg HR (bpm)", ph:"e.g. 143" },
+  ]},
+  { title:"🧠 Wellness", fields:[
+    { key:"fatigue", label:"Weekly Fatigue (1–10)", ph:"e.g. 3" },
+    { key:"shoulder", label:"Shoulder Pain (0–10)", ph:"e.g. 1" },
+    { key:"weight", label:"Bodyweight — optional (lbs)", ph:"e.g. 146" },
+  ]},
+];
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+
+const mem = {};
+function sget(key, def) {
+  try { const v = localStorage.getItem(key); if (v !== null) return JSON.parse(v); } catch(e) {}
+  return mem[key] !== undefined ? mem[key] : def;
+}
+function sset(key, val) {
+  mem[key] = val;
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+
+function getAutoWeek() {
+  const d = Math.floor((Date.now() - START.getTime()) / (7*24*60*60*1000));
+  return Math.min(Math.max(d + 1, 1), 20);
+}
+
+function getPhase(w) { return PHASES.find(p => p.weeks.includes(w)) || PHASES[0]; }
+
+let CW = sget("cw", getAutoWeek());
+let CTAB = "tracker";
+let checked = sget("chk", {});
+let notes = sget("nts", {});
+let metrics = sget("mtr", {});
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function sessCount(w) { return SESSIONS.filter(s => checked[w+"-"+s.day]).length; }
+
+function updateHeader() {
+  const p = getPhase(CW);
+  const cnt = sessCount(CW);
+  const pct = Math.round(cnt / SESSIONS.length * 100);
+  document.getElementById("header").style.background = p.color;
+  document.documentElement.style.setProperty("--pc", p.color);
+  document.documentElement.style.setProperty("--pl", p.light);
+  document.getElementById("h-phase").textContent = p.name;
+  document.getElementById("h-week").textContent = "Week " + CW + " of 20";
+  document.getElementById("h-count").textContent = cnt + "/" + SESSIONS.length + " sessions this week";
+  document.getElementById("h-prog").style.width = pct + "%";
+
+  // Pills
+  let html = "";
+  for (let w = 1; w <= 20; w++) {
+    const ph = getPhase(w);
+    const done = sessCount(w) === SESSIONS.length;
+    const isC = w === CW;
+    const bg = isC ? "white" : done ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.15)";
+    const col = isC ? ph.color : "white";
+    const fw = isC ? "700" : "400";
+    html += `<button class="wpill" style="background:${bg};color:${col};font-weight:${fw};${isC?"box-shadow:0 0 0 2px white":""}" onclick="goWeek(${w})">${w}</button>`;
+  }
+  document.getElementById("h-pills").innerHTML = html;
+}
+
+function updateTabs() {
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    const on = b.dataset.tab === CTAB;
+    b.classList.toggle("on", on);
+    b.style.borderBottomColor = on ? getPhase(CW).color : "transparent";
+    b.style.color = on ? getPhase(CW).color : "#777";
+  });
+}
+
+// ── TAB RENDERS ──────────────────────────────────────────────────────────────
+
+function renderTracker() {
+  const p = getPhase(CW);
+  let html = `<p class="hint">Tap to check off sessions. 🌟 = most important — never skip. Flexible = ok to drop if week gets crazy.</p>`;
+
+  SESSIONS.forEach(s => {
+    const key = CW + "-" + s.day;
+    const done = !!checked[key];
+    const badges = (s.priority ? `<span class="badge bp">⭐ PRIORITY</span>` : "") + (s.flex ? `<span class="badge bf">FLEXIBLE</span>` : "");
+    html += `<div class="scard${done?" done":""}${s.flex&&!done?" flex":""}" id="sc-${s.day}" onclick="tap('${s.day}')">
+      <div class="scheck">${done?"✓":""}</div>
+      <div class="semoji">${s.icon}</div>
+      <div style="flex:1"><div class="sname">${s.day} — ${s.label}${badges}</div></div>
+    </div>`;
+  });
+
+  const wn = notes[CW] || "";
+  html += `<div class="notes-box">
+    <div class="notes-lbl">📝 Week ${CW} Notes</div>
+    <textarea id="note-ta" placeholder="How did this week go? PRs, pain, anything to flag...">${wn}</textarea>
+  </div>`;
+
+  document.getElementById("content").innerHTML = html;
+  document.getElementById("note-ta").addEventListener("input", function() {
+    notes[CW] = this.value;
+    sset("nts", notes);
+  });
+}
+
+function renderTargets() {
+  const p = getPhase(CW);
+  const t = TARGETS[CW] || {};
+
+  let html = `<div class="phase-banner" style="background:${p.light};border:1px solid ${p.color}30">
+    <div class="phase-bname" style="color:${p.color}">${p.name}</div>
+    <div class="phase-bdesc">${p.desc}</div>
+  </div>`;
+
+  if (CW === 20) {
+    html += `<div class="race-card">
+      <div class="race-emoji">🏁</div>
+      <div class="race-title">RACE WEEK</div>
+      <div class="race-tip">Go out at 9:15/mile. Stay conservative through mile 6. Pick it up miles 7–10. Empty the tank miles 11–13.</div>
+      <div class="race-target">Target: Sub-2:00 Half Marathon 🎯</div>
+    </div>`;
+  } else {
+    [
+      ["🏋️ Back Squat Working Sets", t.squat],
+      ["🔩 RDL / Deadlift", t.rdl],
+      ["🍑 Hip Thrust", t.hip],
+      ["🚣 Thu Erg Target", t.ergThu],
+      ["⚡ Fri Erg Intervals", t.ergFri],
+      ["🏃 Tuesday Run", t.run],
+      ["🌟 Saturday Long Run", t.long],
+    ].forEach(([lbl, val]) => {
+      html += `<div class="tcard"><div class="tlabel">${lbl}</div><div class="tval">${val||"—"}</div></div>`;
+    });
+  }
+
+  document.getElementById("content").innerHTML = html;
+}
+
+function renderMetrics() {
+  const wm = metrics[CW] || {};
+  let html = `<p class="hint">Log your numbers each week. Estimates are fine — the trend matters more than precision.</p>`;
+
+  METRIC_GROUPS.forEach(g => {
+    html += `<div class="sdiv">${g.title}</div>`;
+    g.fields.forEach(f => {
+      html += `<div class="mcard">
+        <div class="mlabel">${f.label}</div>
+        <input type="text" id="m-${f.key}" placeholder="${f.ph}" value="${wm[f.key]||""}">
+      </div>`;
+    });
+  });
+
+  document.getElementById("content").innerHTML = html;
+
+  METRIC_GROUPS.forEach(g => {
+    g.fields.forEach(f => {
+      const el = document.getElementById("m-" + f.key);
+      if (el) {
+        el.addEventListener("input", function() {
+          if (!metrics[CW]) metrics[CW] = {};
+          metrics[CW][f.key] = this.value;
+          sset("mtr", metrics);
+        });
+      }
+    });
+  });
+}
+
+function renderProgress() {
+  let html = `<p class="hint">Your full training history. Fill in the Log tab each week to build your record.</p>`;
+
+  for (let w = 1; w <= 20; w++) {
+    const m = metrics[w] || {};
+    const sess = sessCount(w);
+    const hasData = Object.keys(m).length > 0 || sess > 0;
+    if (!hasData && w > CW) continue;
+    const p = getPhase(w);
+    const isCur = w === CW;
+
+    let pills = "";
+    if (m.squat)    pills += `<span class="pill">Squat: ${m.squat}lb</span>`;
+    if (m.deadlift) pills += `<span class="pill">DL: ${m.deadlift}lb</span>`;
+    if (m.hipThrust)pills += `<span class="pill">Hip Thrust: ${m.hipThrust}lb</span>`;
+    if (m.ergSplit) pills += `<span class="pill erg">Erg: ${m.ergSplit}</span>`;
+    if (m.runPace)  pills += `<span class="pill erg">Run: ${m.runPace}mph</span>`;
+    if (m.runHR)    pills += `<span class="pill hr">HR: ${m.runHR}bpm</span>`;
+    if (m.fatigue)  pills += `<span class="pill fat">Fatigue: ${m.fatigue}/10</span>`;
+    if (m.shoulder) pills += `<span class="pill ${parseInt(m.shoulder)>3?"warn":"ok"}">Shoulder: ${m.shoulder}/10</span>`;
+
+    const noteEl = notes[w] ? `<div class="wnote">"${notes[w]}"</div>` : "";
+    const style = isCur ? `border-color:${p.color};background:${p.light}` : "";
+
+    html += `<div class="pweek${isCur?" cur":""}" style="${style}">
+      <div class="pw-header">
+        <div class="pw-title" style="color:${p.color}">Week ${w}${isCur?" ← now":""}</div>
+        <div class="pw-sess">${sess}/${SESSIONS.length} sessions</div>
+      </div>
+      ${pills ? `<div class="pills">${pills}</div>` : `<div class="nodata">No data logged yet</div>`}
+      ${noteEl}
+    </div>`;
+  }
+
+  document.getElementById("content").innerHTML = html;
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────────────────────
+
+function tap(day) {
+  const key = CW + "-" + day;
+  checked[key] = !checked[key];
+  sset("chk", checked);
+  // Update just the card, not full re-render
+  const card = document.getElementById("sc-" + day);
+  const s = SESSIONS.find(x => x.day === day);
+  const done = checked[key];
+  card.className = "scard" + (done?" done":"") + (s.flex&&!done?" flex":"");
+  card.querySelector(".scheck").textContent = done ? "✓" : "";
+  updateHeader();
+}
+
+function goWeek(w) {
+  CW = w;
+  sset("cw", CW);
+  updateHeader();
+  updateTabs();
+  renderTab();
+}
+
+function switchTab(t) {
+  CTAB = t;
+  updateTabs();
+  renderTab();
+}
+
+function renderTab() {
+  if (CTAB === "tracker") renderTracker();
+  else if (CTAB === "targets") renderTargets();
+  else if (CTAB === "metrics") renderMetrics();
+  else renderProgress();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+
+updateHeader();
+updateTabs();
+renderTab();
+</script>
+</body>
+</html>
