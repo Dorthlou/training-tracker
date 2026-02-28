@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<meta name="apple-mobile-web-app-title" content="DorthLog">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>DorthLog</title>
+<meta name="apple-mobile-web-app-title" content="Training">
+<title>Dorothy's Training Tracker</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f0f4f8; min-height: 100vh; padding-bottom: 60px; }
@@ -122,59 +121,68 @@ const PHASES = [
 ];
 
 const SESSIONS = [
-  { day:"Mon", label:"Lower Body Lift", icon:"🏋️", priority:false, flex:false },
-  { day:"Tue", label:"Treadmill Run", icon:"🏃", priority:false, flex:false },
-  { day:"Wed", label:"Upper Body Lift", icon:"💪", priority:false, flex:false },
-  { day:"Thu", label:"Erg Steady State", icon:"🚣", priority:false, flex:true },
-  { day:"Fri", label:"Posterior Chain + Erg", icon:"⚡", priority:false, flex:false },
+  { day:"Mon", label:"Lower Body — Squat, RDL, Power", icon:"🏋️", priority:false, flex:false },
+  { day:"Tue", label:"Polarized Run", icon:"🏃", priority:false, flex:false },
+  { day:"Wed", label:"Upper Body — Pulls, Arms, Core", icon:"💪", priority:false, flex:false },
+  { day:"Thu", label:"Hard Erg — Intervals", icon:"🚣", priority:false, flex:true },
+  { day:"Fri", label:"Posterior Chain + Legs", icon:"⚡", priority:false, flex:false },
   { day:"Sat", label:"Long Run", icon:"🌟", priority:true, flex:false },
-  { day:"Sun", label:"Makeup / Rest", icon:"😴", priority:false, flex:true },
+  { day:"Sun", label:"Flex Day / Rest", icon:"😴", priority:false, flex:true },
 ];
 
 const TARGETS = {
-  1: { squat:"155–165 lbs", rdl:"135–145 lbs", hip:"Assess first session — start 95–115 lbs", ergThu:"4000–5000m @ 2:16–2:18 /500m", ergFri:"4×1000m @ 2:14–2:16 /500m", run:"40 min easy • 5.2–5.6 mph • HR <145", long:"4–5 miles • 5.2–5.6 mph • HR <145 • 1% incline" },
-  2: { squat:"155–165 lbs", rdl:"137–147 lbs", hip:"105–125 lbs", ergThu:"4000–5000m @ 2:16–2:18", ergFri:"4×1000m @ 2:14–2:16", run:"40 min easy • HR <145", long:"4–5 miles • genuinely conversational" },
-  3: { squat:"160–168 lbs", rdl:"140–150 lbs", hip:"110–130 lbs", ergThu:"4500–5000m @ 2:15–2:17", ergFri:"4×1000m @ 2:13–2:15", run:"42 min easy • HR <147", long:"5 miles • HR <145" },
-  4: { squat:"162–170 lbs", rdl:"142–152 lbs", hip:"115–135 lbs", ergThu:"5000–6000m @ 2:14–2:16", ergFri:"4×1000m @ 2:13–2:15", run:"45 min steady • HR 145–155", long:"5 miles • last mile at race pace 9:05/mi" },
-  5: { squat:"165–175 lbs", rdl:"150–160 lbs", hip:"125–145 lbs", ergThu:"5000–6000m @ 2:14–2:16", ergFri:"2×3000m @ 2:12–2:14", run:"Steady 20 min + tempo 10 min @ 6.8–7.0 mph", long:"5–6 miles + strides + last mile race pace" },
-  6: { squat:"168–178 lbs", rdl:"153–163 lbs", hip:"128–148 lbs", ergThu:"5500–6000m @ 2:13–2:15", ergFri:"2×3000m @ 2:12–2:14", run:"Steady + tempo block", long:"6 miles + 4–6 strides" },
-  7: { squat:"170–180 lbs", rdl:"157–167 lbs", hip:"132–152 lbs", ergThu:"6000–7000m @ 2:12–2:14", ergFri:"2×3000m @ 2:11–2:13", run:"4×6 min tempo @ 7.0 mph / 2 min off", long:"6–7 miles + strides" },
-  8: { squat:"173–183 lbs", rdl:"160–170 lbs", hip:"137–157 lbs", ergThu:"6000–7000m @ 2:12–2:14", ergFri:"6000m straight @ 2:10–2:12", run:"4×6 min tempo intervals", long:"7 miles + tempo miles 4–6" },
-  9: { squat:"175–185 lbs", rdl:"163–173 lbs", hip:"140–160 lbs", ergThu:"6500–7000m @ 2:11–2:13", ergFri:"6000m @ 2:10–2:12", run:"4×6 min tempo", long:"7–8 miles + race pace work" },
-  10: { squat:"178–185 lbs", rdl:"167–177 lbs", hip:"143–163 lbs", ergThu:"6000–7000m @ 2:11–2:13", ergFri:"6000m @ 2:10–2:12", run:"3–4 mile tempo @ 7.0–7.2 mph", long:"8 miles • miles 4–6 tempo effort" },
-  11: { squat:"180–190 lbs", rdl:"170–180 lbs", hip:"147–167 lbs", ergThu:"7000–8000m @ 2:10–2:12", ergFri:"3×2000m @ 2:08–2:10", run:"3–4 mile tempo", long:"8–9 miles + 2 mi race pace in middle" },
-  12: { squat:"182–192 lbs", rdl:"172–182 lbs", hip:"150–170 lbs", ergThu:"7000–8000m @ 2:10–2:12", ergFri:"3×2000m @ 2:08–2:10", run:"3–4 mile tempo", long:"9 miles + race pace segment" },
-  13: { squat:"183–193 lbs", rdl:"174–184 lbs", hip:"152–172 lbs", ergThu:"7500–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:08–2:10", run:"Race pace comfort work", long:"9–10 miles + 2 mi race pace" },
-  14: { squat:"185–195 lbs", rdl:"176–186 lbs", hip:"155–175 lbs", ergThu:"7500–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:08–2:10", run:"Race pace sharpening", long:"10 miles • miles 6–9 at race pace" },
-  15: { squat:"187–197 lbs", rdl:"178–188 lbs", hip:"157–177 lbs", ergThu:"7000–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:07–2:09", run:"Race pace work", long:"10–11 miles — peak long run" },
-  16: { squat:"188–198 lbs", rdl:"180–190 lbs", hip:"159–179 lbs", ergThu:"7000–8000m @ 2:09–2:11", ergFri:"3×2000m @ 2:07–2:09", run:"Race pace sharpening + strides", long:"11 miles — race simulation" },
-  17: { squat:"183–193 lbs", rdl:"174–184 lbs", hip:"152–170 lbs", ergThu:"5000m easy", ergFri:"2×1500m easy", run:"Easy + 4 strides", long:"8 miles — taper begins. Easy only." },
-  18: { squat:"178–188 lbs", rdl:"170–180 lbs", hip:"148–165 lbs", ergThu:"4000m easy", ergFri:"2×1000m easy", run:"Easy + 4 strides", long:"7 miles easy + strides" },
-  19: { squat:"170–180 lbs", rdl:"165–172 lbs", hip:"143–158 lbs", ergThu:"Rest", ergFri:"20 min easy", run:"20 min easy + 4 strides", long:"5 miles shake-out. Nothing hard." },
-  20: { squat:"—", rdl:"—", hip:"—", ergThu:"—", ergFri:"—", run:"Race week — easy only", long:"🏁 RACE DAY" },
+  1:  { squat:"135–155 lbs (paused, full depth)", bss:"95–100 lbs barbell", rdl:"135–145 lbs + chalk", hip:"70 kg (154 lbs)", legpress:"500–520 lbs", ergThu:"4×1000m @ 2:11–2:13 /500m • neg split", ergFri:"Optional 20 min easy @ 2:18–2:22 if legs ok", run:"35 min easy • 5.4 mph anchor • HR <145", long:"4–5 miles • HR <145 • truly conversational" },
+  2:  { squat:"135–155 lbs (paused)", bss:"95–100 lbs", rdl:"137–147 lbs + chalk", hip:"72–76 kg", legpress:"505–525 lbs", ergThu:"4×1000m @ 2:11–2:13 • piece 4 fastest", ergFri:"Optional 20 min easy", run:"35 min easy • HR <145", long:"4–5 miles • HR <145" },
+  3:  { squat:"140–158 lbs (paused)", bss:"97–103 lbs", rdl:"139–150 lbs", hip:"74–80 kg", legpress:"510–530 lbs", ergThu:"4×1000m @ 2:11–2:12", ergFri:"Optional 20 min easy", run:"38 min easy • HR <145", long:"5 miles • HR <145" },
+  4:  { squat:"142–160 lbs", bss:"98–105 lbs", rdl:"141–152 lbs", hip:"76–83 kg", legpress:"515–535 lbs", ergThu:"4×1000m @ 2:10–2:12", ergFri:"Optional 20 min easy", run:"40 min easy • HR <145", long:"5 miles • HR <145 • last mile race pace" },
+  5:  { squat:"145–163 lbs", bss:"103–108 lbs", rdl:"155–168 lbs (chalk)", hip:"80–88 kg", legpress:"525–545 lbs", ergThu:"2×3000m @ 2:09–2:11 • piece 2 faster", ergFri:"Optional 20 min easy", run:"10 min easy + 10 min TEMPO @ 6.9–7.1 mph", long:"5–6 miles + 4 strides after" },
+  6:  { squat:"148–166 lbs", bss:"105–112 lbs", rdl:"Conv DL starts — 155–165 lbs", hip:"83–91 kg", legpress:"530–552 lbs", ergThu:"2×3000m @ 2:09–2:11", ergFri:"Optional 20 min easy", run:"Easy + tempo block", long:"6 miles + 4–6 strides" },
+  7:  { squat:"150–168 lbs", bss:"107–115 lbs", rdl:"Conv DL 160–172 lbs", hip:"86–94 kg", legpress:"538–560 lbs", ergThu:"5×1000m @ 2:08–2:10", ergFri:"Optional 20 min easy", run:"4×5 min HARD @ 7.0–7.2 mph / 90 sec off", long:"6–7 miles + strides" },
+  8:  { squat:"153–170 lbs", bss:"109–117 lbs", rdl:"Conv DL 165–177 lbs", hip:"89–97 kg", legpress:"545–568 lbs", ergThu:"5×1000m @ 2:08–2:10", ergFri:"Optional 20 min easy", run:"4×5 min hard intervals", long:"7–8 miles + tempo miles 4–6" },
+  9:  { squat:"155–172 lbs", bss:"111–119 lbs", rdl:"Conv DL 168–180 lbs", hip:"91–100 kg", legpress:"550–575 lbs", ergThu:"5×1000m @ 2:08–2:09", ergFri:"Optional 20 min easy", run:"4×5 min hard", long:"7–8 miles + race pace work" },
+  10: { squat:"157–175 lbs", bss:"113–122 lbs", rdl:"Conv DL 172–185 lbs", hip:"94–103 kg", legpress:"558–580 lbs", ergThu:"5×1000m @ 2:07–2:09", ergFri:"Optional 20 min easy", run:"3 mile TEMPO @ 7.0–7.2 mph", long:"8 miles • miles 4–6 tempo effort" },
+  11: { squat:"160–178 lbs", bss:"115–124 lbs", rdl:"Conv DL 175–190 lbs", hip:"97–107 kg", legpress:"565–588 lbs", ergThu:"3×2000m @ 2:06–2:08", ergFri:"Optional 20 min easy", run:"3 mile TEMPO", long:"8–9 miles + 2 mi race pace in middle" },
+  12: { squat:"162–180 lbs", bss:"118–126 lbs", rdl:"Conv DL 178–193 lbs", hip:"99–110 kg", legpress:"570–595 lbs", ergThu:"3×2000m @ 2:06–2:08", ergFri:"Optional 20 min easy", run:"3 mile tempo", long:"9 miles + race pace segment" },
+  13: { squat:"164–182 lbs", bss:"120–128 lbs", rdl:"Conv DL 181–196 lbs", hip:"102–112 kg", legpress:"575–600 lbs", ergThu:"3×2000m @ 2:05–2:07", ergFri:"Optional 20 min easy", run:"Race pace comfort work", long:"9–10 miles + 2 mi race pace" },
+  14: { squat:"166–184 lbs", bss:"122–130 lbs", rdl:"Conv DL 184–200 lbs", hip:"104–115 kg", legpress:"582–608 lbs", ergThu:"3×2000m @ 2:05–2:07", ergFri:"Optional 20 min easy", run:"Race pace sharpening", long:"10 miles • miles 6–9 at race pace" },
+  15: { squat:"168–186 lbs", bss:"124–132 lbs", rdl:"Conv DL 187–203 lbs", hip:"106–117 kg", legpress:"588–615 lbs", ergThu:"4×1500m @ 2:05–2:07", ergFri:"Optional 20 min easy", run:"Race pace work", long:"10–11 miles — peak long run" },
+  16: { squat:"170–188 lbs", bss:"126–134 lbs", rdl:"Conv DL 190–207 lbs", hip:"108–119 kg", legpress:"595–622 lbs", ergThu:"4×1500m @ 2:05–2:06", ergFri:"Optional 20 min easy", run:"Race pace + strides", long:"11 miles — race simulation" },
+  17: { squat:"162–180 lbs (taper)", bss:"118–126 lbs", rdl:"180–195 lbs", hip:"100–112 kg", legpress:"570–595 lbs", ergThu:"2×2000m @ 2:05–2:07", ergFri:"Skip or 15 min easy", run:"Easy + 4 strides", long:"8 miles — taper begins" },
+  18: { squat:"158–175 lbs", bss:"114–122 lbs", rdl:"175–190 lbs", hip:"96–108 kg", legpress:"558–582 lbs", ergThu:"2×2000m @ 2:05–2:07", ergFri:"Skip or 15 min easy", run:"Easy + 4 strides", long:"7 miles easy + strides" },
+  19: { squat:"150–165 lbs", bss:"108–116 lbs", rdl:"168–182 lbs", hip:"90–100 kg", legpress:"540–565 lbs", ergThu:"1×3000m @ 2:06–2:08", ergFri:"Skip", run:"20 min easy + 4 strides", long:"5 miles shakeout. Nothing hard." },
+  20: { squat:"—", bss:"—", rdl:"—", hip:"—", legpress:"—", ergThu:"1×1000m shakeout only", ergFri:"Rest", run:"Easy only — save legs", long:"🏁 RACE DAY — Sub-2:00" },
 };
 
 const METRIC_GROUPS = [
-  { title:"💪 Strength", fields:[
-    { key:"squat", label:"Back Squat Working Set (lbs)", ph:"e.g. 165" },
-    { key:"deadlift", label:"Deadlift / RDL Working Set (lbs)", ph:"e.g. 145" },
-    { key:"hipThrust", label:"Hip Thrust Working Set (lbs)", ph:"e.g. 115" },
+  { title:"🏋️ Lower Body Strength", fields:[
+    { key:"squat",    label:"Back Squat Working Set (lbs)",          ph:"e.g. 155" },
+    { key:"bss",      label:"Bulgarian Split Squat — Barbell (lbs)", ph:"e.g. 95" },
+    { key:"rdl",      label:"RDL / Conv Deadlift Working Set (lbs)", ph:"e.g. 145" },
+    { key:"hipThrust",label:"Hip Thrust Working Set (kg)",           ph:"e.g. 70" },
+    { key:"legpress", label:"Leg Press Working Set (lbs)",           ph:"e.g. 510" },
+  ]},
+  { title:"💪 Upper Body Strength", fields:[
+    { key:"cablerow",  label:"Seated Cable Row (lbs)",       ph:"e.g. 95" },
+    { key:"pulldown",  label:"Lat Pulldown (lbs)",           ph:"e.g. 95" },
+    { key:"tricep",    label:"Tricep Pushdown (lbs)",        ph:"e.g. 55" },
+    { key:"bicep",     label:"Bicep Curl DB (lbs each)",     ph:"e.g. 22" },
   ]},
   { title:"🚣 Erg", fields:[
-    { key:"ergSplit", label:"Best Erg Split (/500m)", ph:"e.g. 2:14.5" },
-    { key:"ergDist", label:"Total Erg Distance (m)", ph:"e.g. 9000" },
+    { key:"ergSplit",  label:"Best Interval Split (/500m)",  ph:"e.g. 2:11.4" },
+    { key:"ergPiece",  label:"Piece (e.g. 4×1000m)",        ph:"e.g. 4x1000m" },
   ]},
   { title:"🏃 Running", fields:[
-    { key:"runPace", label:"Easy Run Pace (mph)", ph:"e.g. 5.7" },
-    { key:"runHR", label:"Long Run Avg HR (bpm)", ph:"e.g. 143" },
+    { key:"runPace",   label:"Easy Run Pace at Z2 (mph)",    ph:"e.g. 5.4" },
+    { key:"runHR",     label:"Long Run Avg HR (bpm)",        ph:"e.g. 141" },
+    { key:"longDist",  label:"Saturday Long Run Distance (miles)", ph:"e.g. 5.0" },
   ]},
   { title:"🧠 Wellness", fields:[
-    { key:"fatigue", label:"Weekly Fatigue (1–10)", ph:"e.g. 3" },
-    { key:"shoulder", label:"Shoulder Pain (0–10)", ph:"e.g. 1" },
-    { key:"weight", label:"Bodyweight — optional (lbs)", ph:"e.g. 146" },
+    { key:"fatigue",   label:"Weekly Fatigue (1–10)",        ph:"e.g. 3" },
+    { key:"shoulder",  label:"Shoulder Pain (0–10)",         ph:"e.g. 1" },
+    { key:"grip",      label:"Grip Failure on RDL? (yes/no)",ph:"e.g. no" },
+    { key:"weight",    label:"Bodyweight — optional (lbs)",  ph:"e.g. 146" },
   ]},
 ];
-
 // ── STORAGE ──────────────────────────────────────────────────────────────────
 
 const mem = {};
@@ -289,10 +297,12 @@ function renderTargets() {
     </div>`;
   } else {
     [
-      ["🏋️ Back Squat Working Sets", t.squat],
-      ["🔩 RDL / Deadlift", t.rdl],
+      ["🏋️ Back Squat (paused)", t.squat],
+      ["🥌 BSS — Barbell", t.bss],
+      ["🔩 RDL / Conv Deadlift", t.rdl],
       ["🍑 Hip Thrust", t.hip],
-      ["🚣 Thu Erg Target", t.ergThu],
+      ["🦵 Leg Press", t.legpress],
+      ["🚣 Thu Erg — Intervals", t.ergThu],
       ["⚡ Fri Erg Intervals", t.ergFri],
       ["🏃 Tuesday Run", t.run],
       ["🌟 Saturday Long Run", t.long],
@@ -347,9 +357,11 @@ function renderProgress() {
 
     let pills = "";
     if (m.squat)    pills += `<span class="pill">Squat: ${m.squat}lb</span>`;
-    if (m.deadlift) pills += `<span class="pill">DL: ${m.deadlift}lb</span>`;
-    if (m.hipThrust)pills += `<span class="pill">Hip Thrust: ${m.hipThrust}lb</span>`;
-    if (m.ergSplit) pills += `<span class="pill erg">Erg: ${m.ergSplit}</span>`;
+    if (m.bss)      pills += `<span class="pill">BSS: ${m.bss}lb</span>`;
+    if (m.legpress) pills += `<span class="pill">LP: ${m.legpress}lb</span>`;
+    if (m.rdl)      pills += `<span class="pill">DL/RDL: ${m.rdl}lb</span>`;
+    if (m.hipThrust) pills += `<span class="pill">Hip Thrust: ${m.hipThrust}kg</span>`;
+    if (m.ergSplit)  pills += `<span class="pill erg">Erg: ${m.ergSplit}</span>`;
     if (m.runPace)  pills += `<span class="pill erg">Run: ${m.runPace}mph</span>`;
     if (m.runHR)    pills += `<span class="pill hr">HR: ${m.runHR}bpm</span>`;
     if (m.fatigue)  pills += `<span class="pill fat">Fatigue: ${m.fatigue}/10</span>`;
